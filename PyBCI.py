@@ -35,7 +35,6 @@ Stop(hMaster)
 print buff[0]
 print overlap[0]
 
-
 #CloseDevice(hMaster)
 ##SetGround(hMaster,GND)
 ##SetReference(hMaster,Ref)
