@@ -5,21 +5,21 @@ from ctypes.util import find_library
 from os import path
 import sys
 
-
-try:
-	dirname = path.dirname(path.abspath(__file__))
-	if sys.platform == 'win32':
-		libsvm = CDLL(path.join(dirname, r'..\windows\libsvm.dll'))
-	else:
-		libsvm = CDLL(path.join(dirname, '../libsvm.so.2'))
-except:
-# For unix the prefix 'lib' is not considered.
-	if find_library('svm'):
-		libsvm = CDLL(find_library('svm'))
-	elif find_library('libsvm'):
-		libsvm = CDLL(find_library('libsvm'))
-	else:
-		raise Exception('LIBSVM library not found.')
+libsvm = CDLL('libsvm.dll')
+# try:
+# 	dirname = path.dirname(path.abspath(__file__))
+# 	if sys.platform == 'win32':
+# 		libsvm = CDLL(path.join(dirname, r'..\windows\libsvm.dll'))
+# 	else:
+# 		libsvm = CDLL(path.join(dirname, '../libsvm.so.2'))
+# except:
+# # For unix the prefix 'lib' is not considered.
+# 	if find_library('svm'):
+# 		libsvm = CDLL(find_library('svm'))
+# 	elif find_library('libsvm'):
+# 		libsvm = CDLL(find_library('libsvm'))
+# 	else:
+# 		raise Exception('LIBSVM library not found.')
 
 # Construct constants
 SVM_TYPE = ['C_SVC', 'NU_SVC', 'ONE_CLASS', 'EPSILON_SVR', 'NU_SVR' ]

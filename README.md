@@ -23,3 +23,11 @@ cost and little harm.
 4. System
 
 
+5. Develop Model
+
+   Branches:
+   		master
+   		develop
+   		feature branches
+
+
