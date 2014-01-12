@@ -5,7 +5,7 @@ from ctypes.util import find_library
 from os import path
 import sys
 
-libsvm = CDLL('libsvm.dll')
+libsvm = CDLL('svm.o')
 # try:
 # 	dirname = path.dirname(path.abspath(__file__))
 # 	if sys.platform == 'win32':
