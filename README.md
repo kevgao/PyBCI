@@ -20,8 +20,8 @@ cost and little harm.
 3. g.tec and g.USBamp
 
 
-4. System
-
+4. System Design
+	
 
 5. Develop Model
 
@@ -30,4 +30,11 @@ cost and little harm.
    		develop
    		feature branches
 
+   	WorkFlow:
 
+
+6. Required Modules
+	winsound
+	wxPython
+	libsvm
+	gUSBamp
