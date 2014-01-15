@@ -1,15 +1,41 @@
-# 	gUSBamp Interface for Python
-# 	Author: Duanfeng Gao
-# 	Date: Jan 5th, 2014
-#	Email: kevgao@live.com
-#	Website: www.kevgao.org
+#!/usr/bin/env python
+'''
+The gUSBamp Module is the python version of the gUSBamp API. gUSBamp is an amplifier of brain EEG signals produced by g.tec
+
+Author: Duanfeng Gao
+Date: Jan 5th, 2014
+Email: kevgao@live.com
+Website: www.kevgao.org
+
+'''
 
 import ctypes
 
 # Load DLL Library
 dll=ctypes.windll.LoadLibrary('gUSBamp.dll') # 'gUSBamp.dll' should be located in the lib directory
 
-#----------------------------------class-------------------------------------
+
+#-------------------------Configuration Parameters-------------------------------------#
+# Filters
+global CHEBYSHEV,BUTTERWORTH,BESSEL
+CHEBYSHEV	= 	0	# The Chebyshev Filter
+BUTTERWORTH	=	1 	# The Butterworth Filter
+BESSEL		= 	2 	# The Bessel Filter
+
+# Device Modes
+global NORMAL,IMPEDENCE,CALIBRATE,COUNTER
+NORMAL 		=	0	# The Normal Mode
+IMPEDENCE	= 	1 	# The Impedence Mode
+CALIBRATE 	= 	2 	# The Calibrate Mode
+COUNTER 	= 	3   # The Counter Mode
+
+# Device Sync
+global SLAVE, MASTER
+MASTER		=	0	# Setting the device as the Master
+SLAVE		=	1 	# Setting the device as the Slave
+
+
+#----------------------------------gUSBamp class-------------------------------------#
 
 class gUSBamp(object):
     ''' The gUSBamp Class'''       
@@ -38,42 +64,7 @@ class gUSBamp(object):
 
 
 
-
-#-------------------------------------API-------------------------------------------
-
-#-------------------------------------------------#
-#            Configuration Parameters             #
-#-------------------------------------------------#
-
-# Filters
-global CHEBYSHEV,BUTTERWORTH,BESSEL
-CHEBYSHEV	= 	0	# The Chebyshev Filter
-BUTTERWORTH	=	1 	# The Butterworth Filter
-BESSEL		= 	2 	# The Bessel Filter
-
-# Device Modes
-global NORMAL,IMPEDENCE,CALIBRATE,COUNTER
-NORMAL 		=	0	# The Normal Mode
-IMPEDENCE	= 	1 	# The Impedence Mode
-CALIBRATE 	= 	2 	# The Calibrate Mode
-COUNTER 	= 	3   # The Counter Mode
-
-# Device Sync
-global SLAVE, MASTER
-MASTER		=	0	# Setting the device as the Master
-SLAVE		=	1 	# Setting the device as the Slave
-
-
-#-------------------------------------------------#
-#                 Data Structures                 #
-#-------------------------------------------------#
-
-
-
-
-#-------------------------------------------------#
-#                   API Fuctions                  #
-#-------------------------------------------------#
+#-------------------------------------Python API-------------------------------------------#
 
 # Common Functions
 def OpenDevice(PortNum):  	 # Get the Device Handle through the USB Port Number, the port number should be an integer and could be found on the device manage window of the Windows OS.

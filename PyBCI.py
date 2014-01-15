@@ -1,7 +1,8 @@
-from Sound import *
-from gUSBamp import *
+from lib.Sound import *
+from lib.gtec import *
+from lib.svmutil import *
+
 from ctypes import *
-from svmutil import *
 
 # main program constants
 BufferSize=8
