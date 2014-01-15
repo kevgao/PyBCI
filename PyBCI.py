@@ -13,28 +13,32 @@ GND=(0,0,0,0)
 
 # Initializing Device
 hMaster = OpenDeviceEx('UB-2012.10.03')
-hSlave= OpenDeviceEx('UB-2012.10.04')
-
-SetMode(hMaster,NORMAL)
-SetSampleRate(hMaster,SampleRate)
-SetBufferSize(hMaster,BufferSize)
-SetSyncMode(hMaster,MASTER)
-
-SetMode(hSlave,NORMAL)
-SetSampleRate(hSlave,SampleRate)
-SetBufferSize(hSlave,BufferSize)
-SetSyncMode(hSlave,SLAVE)
-
-print GetSerial(hMaster)
-print GetSerial(hSlave)
-
-Start(hMaster)
-buff=ctypes.create_string_buffer(32768)
-overlap=ctypes.create_string_buffer(32768)
-GetData(hMaster,buff,overlap)
-Stop(hMaster)
-print buff[0]
-print overlap[0]
+#hSlave= OpenDeviceEx('UB-2012.10.04')
+v=GetDriverVersion()
+x=GetHardWareVersion(hMaster)
+print v
+print x
+CloseDevice(hMaster)
+##SetMode(hMaster,NORMAL)
+##SetSampleRate(hMaster,SampleRate)
+##SetBufferSize(hMaster,BufferSize)
+##SetSyncMode(hMaster,MASTER)
+##
+##SetMode(hSlave,NORMAL)
+##SetSampleRate(hSlave,SampleRate)
+##SetBufferSize(hSlave,BufferSize)
+##SetSyncMode(hSlave,SLAVE)
+##
+##print GetSerial(hMaster)
+##print GetSerial(hSlave)
+##
+##Start(hMaster)
+##buff=ctypes.create_string_buffer(32768)
+##overlap=ctypes.create_string_buffer(32768)
+##GetData(hMaster,buff,overlap)
+##Stop(hMaster)
+##print buff[0]
+##print overlap[0]
 
 # Data Aquisition
 

@@ -60,7 +60,8 @@ def OpenDeviceEx(Serial):	# Get the Device Handle through the Serial Number of t
 		print "No Such Device"
 
 def CloseDevice(hDevice):	# Close the device through device handle
-	if(dll.GT_CloseDevice(*hDevice)):
+        pHandle=ctypes.pointer(ctypes.c_int(hDevice))
+	if(dll.GT_CloseDevice(pHandle)):
 		print "Device Closed"
 	else:
 		print "Failed to Close Device!"
@@ -120,5 +121,5 @@ def GetSerial(hDevice):
 	dll.GT_GetSerial(hDevice,pStr,16)
 	return pStr
 
-def version():
+def GetDriverVersion():
 	return dll.GT_GetDriverVersion()	
