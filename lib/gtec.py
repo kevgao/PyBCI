@@ -7,8 +7,39 @@
 import ctypes
 
 # Load DLL Library
-dll=ctypes.windll.LoadLibrary('gUSBamp.dll') # 'gUSBamp.dll' should be located in the working directory
+dll=ctypes.windll.LoadLibrary('gUSBamp.dll') # 'gUSBamp.dll' should be located in the lib directory
 
+#----------------------------------class-------------------------------------
+
+class gUSBamp(object):
+    ''' The gUSBamp Class'''       
+    def __init__(self,Serial):
+        self.handle=OpenDeviceEx(Serial)
+    
+    def init(chanelarray={1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16},samplerate=256,slave=False,mode=NORMAL,):
+        SetChannels(self.handle,chanelarray)
+        SetSampleRate(self.handle,samplerate)
+        SetSlave(self.handle,slave)
+        SetMode(self.handle,mode)
+
+    def printInfo(self):
+        print "Device Serial Number is: " + GetSerial(self.handle)
+        print "Device Hardware Version is:" + GetHardWareVersion(self.handle)
+
+    def AquireData(self):
+
+
+    def ReadData(self):
+
+    def Close():
+        CloseDevice(self.handle)
+     
+
+
+
+
+
+#-------------------------------------API-------------------------------------------
 
 #-------------------------------------------------#
 #            Configuration Parameters             #
@@ -126,10 +157,3 @@ def GetDriverVersion():
 
 
 
-class gUSBamp(object):
-    ''' The gUSBamp Class'''
-       
-    def __init__(self,Serial):
-        self.handle=gUSBampLib.OpenDeviceEx(Serial)
-        #gUSBampLib.SetChannels(self.handle)
-        #gUSBampLib.SetSampleRate(self.handle)
