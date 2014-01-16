@@ -1,6 +1,6 @@
 from lib.Sound import *
 from lib.gtec import *
-from lib.svmutil import *
+#from lib.svmutil import *
 
 from ctypes import *
 
@@ -15,10 +15,16 @@ GND=(0,0,0,0)
 # Initializing Device
 hMaster = OpenDeviceEx('UB-2012.10.03')
 #hSlave= OpenDeviceEx('UB-2012.10.04')
-v=GetDriverVersion()
+v=GetSerial(hMaster)
 x=GetHardWareVersion(hMaster)
 print v
 print x
+i=GetImpedence(hMaster,3)
+print i
+print SetChannels(hMaster,[1,2,3,4])
+print SetMode(hMaster,1)
+print GetMode(hMaster)
+GetScale(hMaster)
 CloseDevice(hMaster)
 ##SetMode(hMaster,NORMAL)
 ##SetSampleRate(hMaster,SampleRate)
