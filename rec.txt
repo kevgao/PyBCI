@@ -1,0 +1,1 @@
+<lib.gtec.c_float_Array_550 object at 0x00000000022F6948>

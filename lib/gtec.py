@@ -11,12 +11,24 @@ Website: www.kevgao.org
 '''
 
 import ctypes
+import threading
+import thread
+import time
+import win32event
+import win32api
+import pywintypes
+import win32pipe
 
 # Load DLL Library
 dll=ctypes.windll.LoadLibrary('gUSBamp.dll') # 'gUSBamp.dll' should be located in the lib directory
 
 
 #-------------------------Configuration Parameters-------------------------------------#
+
+HEADER_SIZE=38
+FLOAT_SIZE=4
+
+
 # Filters
 Filter={0:'CHEBYSHEV',1:'BUTTERWORTH',2:'BESSEL'}
 
@@ -35,6 +47,9 @@ class Ref(ctypes.Structure):
 	''' Ref and Gnd struct '''
 	_fields_=[("port1",ctypes.c_int),("port2",ctypes.c_int),("port3",ctypes.c_int),("port4",ctypes.c_int)]
 
+class OverLapped(ctypes.Structure):
+	''' '''
+ 	_fields_=[('Internal',ctypes.c_ulong),('InternalHigh',ctypes.c_ulong),('Offset',ctypes.c_ulong),('OffsetHigh',ctypes.c_ulong),('hEvent',ctypes.c_int)]
 
 #----------------------------------gUSBamp class-------------------------------------#
 
@@ -43,13 +58,20 @@ class gUSBamp(object):
     def __init__(self,Serial):
         self.handle=OpenDeviceEx(Serial)
     
-    def init(self,chanelarray=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],samplerate=256,syncmode=MASTER,mode=NORMAL):
+    def init(self,channelarray=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],samplerate=256,syncmode=0,mode=0):
     	''' Initiate the device, including setting channels, setting sample rate, setting sync mode and setting mode'''
-        if(SetChannels(self.handle,chanelarray)):
+        if(SetChannels(self.handle,channelarray)):
+        	self.channel=channelarray
         	if(SetSampleRate(self.handle,samplerate)):
+        		self.samplerate=samplerate
         		if(SetSyncMode(self.handle,syncmode)):
+        			self.syncmode=syncmode
         			if(SetMode(self.handle,mode)):
-        				print "Device Initialized"
+        				self.mode=mode
+        				if(SetBufferSize(self.handle,samplerate/32)):
+        					self.buffersize=samplerate/32
+        					print "Device Initialized"
+
     
 
     def selfCheck(self):
@@ -67,22 +89,72 @@ class gUSBamp(object):
         print "Device Serial Number is: " + GetSerial(self.handle)
         print "Device Hardware Version is:" + str(GetHardWareVersion(self.handle))
 
-    def aquireData(self):
-    	''' aquire data'''
-    	pass
+    def startAquisition(self):
+    	''' start the data aquisition thread'''
+    	thread.start_new_thread(self._doAquisition,())
 
     def readData(self):
     	pass
 
+    def _doAquisition(self):
+    	''' do aqu'''
+    	ov=OverLapped()
+    	#ov=pywintypes.OVERLAPPED()
+    	ov.hEvent=win32event.CreateEvent(None,0,0,None)
+    	bytesreceived=ctypes.c_long(0)
+    	bufferbytesize=HEADER_SIZE+self.buffersize*len(self.channel)*FLOAT_SIZE
+    	#self.pData=ctypes.create_string_buffer(bufferbytesize)
+    	self.pData=(ctypes.c_float*bufferbytesize)()
+    	Start(self.handle)
+    	GetData(self.handle,ctypes.pointer(self.pData),bufferbytesize,id(ov))
+    	'''
+    	GetData function set ov.Internal to WAIT_PENDING or 259
+    	'''
+    	print ov.hEvent,ov.Internal,ov.InternalHigh,ov.Offset,ov.OffsetHigh
+    	s1=ctypes.windll.kernel32.WaitForSingleObject(ov.hEvent.handle,1000)
+    	#s1=win32event.WaitForSingleObject(ov.hEvent,10000)
+    	print "s1"
+    	''' Possible output of WaiForSingleObject:
+    	WAIT_TIMEOUT          =  258    
+      	WAIT_ABANDONED        =  -1
+      	WAIT_OBJECT_0		  =  0
+    	'''
+    	s2=ctypes.windll.kernel32.GetOverlappedResult(self.handle,id(ov),ctypes.pointer(bytesreceived),0)
+    	#s2=win32pipe.GetOverlappedResult(self.handle,ov,0)
+    	print ov.hEvent,ov.Internal,ov.InternalHigh,ov.Offset,ov.OffsetHigh
+    	#print ctypes.windll.kernel32.GetLastError()
+    	print s1
+    	print s2
+    	print bytesreceived.value
 
 
+
+
+
+    def stopAquisition(self):
+    	pass
+
+    def printData(self):
+    	return self.pData
 
     def close(self):
     	''' close the device '''
+    	Stop(self.handle)
         CloseDevice(self.handle)
      
 
+class DataAquisitionThread(threading.Thread):
+	"""docstring for DataAquisitionThread"""
+	def __init__(self):
+		threading.Thread.__init__(self)
 
+	def run(self):
+		pass
+
+
+
+	
+		
 
 
 #-------------------------------------Python API-------------------------------------------#
@@ -110,7 +182,7 @@ def OpenDeviceEx(Serial):
 
 def CloseDevice(hDevice):
 	'''Close the device through device handle'''
-    pHandle=ctypes.pointer(ctypes.c_int(hDevice))
+	pHandle=ctypes.pointer(ctypes.c_int(hDevice))
 	if(dll.GT_CloseDevice(pHandle)):
 		print "Device Closed"
 		return True
@@ -197,14 +269,21 @@ def Stop(hDevice):
 	else:
 		print "Failed to Stop device"
 
-def GetData(hDevice,buffer,overlap):
-	return dll.GT_GetData(hDevice,buffer,550,overlap)
+def GetData(hDevice,buffer,buffersize,ov):
+	if(dll.GT_GetData(hDevice,buffer,buffersize,ov)):
+		#print ov.hEvent,ov.Internal,ov.InternalHigh,ov.Offset,ov.OffsetHigh
+		print "Getting Data..."
+		return True
+	else:
+		print "Failed to get data."
+		return False
+
 
 
 
 # Device Info Functions
 def GetHardWareVersion(hDevice):
-	v=dll.GT_GetHWVersion(hDevice)
+	v=dll.GT_GetHWVersion(hDevice+1)
 	ver=ctypes.c_float(v)
 	return ver.value
 

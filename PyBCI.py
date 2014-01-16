@@ -13,7 +13,8 @@ Ref=(0,0,0,0)
 GND=(0,0,0,0)
 
 # Initializing Device
-hMaster = OpenDeviceEx('UB-2012.10.03')
+xx = OpenDeviceEx('UB-2012.10.03')
+hMaster=xx
 #hSlave= OpenDeviceEx('UB-2012.10.04')
 v=GetSerial(hMaster)
 x=GetHardWareVersion(hMaster)
@@ -22,7 +23,7 @@ print x
 i=GetImpedence(hMaster,3)
 print i
 print SetChannels(hMaster,[1,2,3,4])
-print SetMode(hMaster,1)
+print SetMode(hMaster,0)
 print GetMode(hMaster)
 GetScale(hMaster)
 CloseDevice(hMaster)
