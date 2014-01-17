@@ -14,10 +14,10 @@ import ctypes
 import threading
 import thread
 import time
-import win32event
-import win32api
-import pywintypes
-import win32pipe
+#import win32event
+#import win32api
+#import pywintypes
+#import win32pipe
 
 # Load DLL Library
 dll=ctypes.windll.LoadLibrary('gUSBamp.dll') # 'gUSBamp.dll' should be located in the lib directory
@@ -49,7 +49,7 @@ class Ref(ctypes.Structure):
 
 class OverLapped(ctypes.Structure):
 	''' '''
- 	_fields_=[('Internal',ctypes.c_ulong),('InternalHigh',ctypes.c_ulong),('Offset',ctypes.c_ulong),('OffsetHigh',ctypes.c_ulong),('hEvent',ctypes.c_int)]
+	_fields_=[('Internal',ctypes.c_ulong),('InternalHigh',ctypes.c_ulong),('Offset',ctypes.c_ulong),('OffsetHigh',ctypes.c_ulong),('hEvent',ctypes.c_int)]
 
 #----------------------------------gUSBamp class-------------------------------------#
 
@@ -60,17 +60,17 @@ class gUSBamp(object):
     
     def init(self,channelarray=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],samplerate=256,syncmode=0,mode=0):
     	''' Initiate the device, including setting channels, setting sample rate, setting sync mode and setting mode'''
-        if(SetChannels(self.handle,channelarray)):
-        	self.channel=channelarray
-        	if(SetSampleRate(self.handle,samplerate)):
-        		self.samplerate=samplerate
-        		if(SetSyncMode(self.handle,syncmode)):
-        			self.syncmode=syncmode
-        			if(SetMode(self.handle,mode)):
-        				self.mode=mode
-        				if(SetBufferSize(self.handle,samplerate/32)):
-        					self.buffersize=samplerate/32
-        					print "Device Initialized"
+    	if(SetChannels(self.handle,channelarray)):
+                self.channel=channelarray
+                if(SetSampleRate(self.handle,samplerate)):
+                	self.samplerate=samplerate
+                	if(SetSyncMode(self.handle,syncmode)):
+                		self.syncmode=syncmode
+                		if(SetMode(self.handle,mode)):
+                			self.mode=mode
+                			if(SetBufferSize(self.handle,samplerate)):
+                				self.buffersize=samplerate
+                				print "Device Initialized"
 
     
 
@@ -99,36 +99,30 @@ class gUSBamp(object):
     def _doAquisition(self):
     	''' do aqu'''
     	ov=OverLapped()
-    	#ov=pywintypes.OVERLAPPED()
-    	ov.hEvent=win32event.CreateEvent(None,0,0,None)
-    	bytesreceived=ctypes.c_long(0)
+    	self.ov=ov
+    	ov.hEvent=ctypes.windll.kernel32.CreateEventExW(None,0,0,None)
+    	bytesreceived=ctypes.c_ulong(0)
+    	pb=ctypes.pointer(bytesreceived)
+    	ppb=ctypes.pointer(pb)
     	bufferbytesize=HEADER_SIZE+self.buffersize*len(self.channel)*FLOAT_SIZE
     	#self.pData=ctypes.create_string_buffer(bufferbytesize)
     	self.pData=(ctypes.c_float*bufferbytesize)()
     	Start(self.handle)
-    	GetData(self.handle,ctypes.pointer(self.pData),bufferbytesize,id(ov))
-    	'''
-    	GetData function set ov.Internal to WAIT_PENDING or 259
-    	'''
-    	print ov.hEvent,ov.Internal,ov.InternalHigh,ov.Offset,ov.OffsetHigh
-    	s1=ctypes.windll.kernel32.WaitForSingleObject(ov.hEvent.handle,1000)
-    	#s1=win32event.WaitForSingleObject(ov.hEvent,10000)
-    	print "s1"
-    	''' Possible output of WaiForSingleObject:
-    	WAIT_TIMEOUT          =  258    
-      	WAIT_ABANDONED        =  -1
-      	WAIT_OBJECT_0		  =  0
-    	'''
-    	s2=ctypes.windll.kernel32.GetOverlappedResult(self.handle,id(ov),ctypes.pointer(bytesreceived),0)
-    	#s2=win32pipe.GetOverlappedResult(self.handle,ov,0)
-    	print ov.hEvent,ov.Internal,ov.InternalHigh,ov.Offset,ov.OffsetHigh
-    	#print ctypes.windll.kernel32.GetLastError()
-    	print s1
-    	print s2
-    	print bytesreceived.value
-
-
-
+    	for i in range(1,100):
+    		print ov.Internal,ov.InternalHigh,ov.Offset,ov.OffsetHigh,ov.hEvent
+    		s3=GetData(self.handle,self.pData,bufferbytesize,ctypes.pointer(ov))
+    		'''GetData function set ov.Internal to WAIT_PENDING or 259'''
+    		s1=ctypes.windll.kernel32.WaitForSingleObject(ov.hEvent,1000)
+    		''' Possible output of WaiForSingleObject: WAIT_TIMEOUT =  258, WAIT_ABANDONED  =  -1, WAIT_OBJECT_0 =  0'''
+    		s2=ctypes.windll.kernel32.GetOverlappedResult(self.handle,id(ov),ppb,0)
+    		#s2=win32pipe.GetOverlappedResult(self.handle,ov,0)
+    		print ov.Internal,ov.InternalHigh,ov.Offset,ov.OffsetHigh,ov.hEvent
+    		#print ctypes.windll.kernel32.GetLastError()
+    		print s1
+    		print s2
+    		print bytesreceived
+    		print pb
+    		print self.pData[100]
 
 
     def stopAquisition(self):
@@ -232,6 +226,10 @@ def SetMode(hDevice,Mode):
 	else:
 		print "Invalid Mode"
 		return False
+
+def EnableTriggerLine(hDevice,b):
+        ''' Enable Trigger Line'''
+        dll.GT_EnableTriggerLine(hDevice,b)
 
 # Data Functions
 def SetBufferSize(hDevice, size): 	
